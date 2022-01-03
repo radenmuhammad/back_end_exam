@@ -1,0 +1,180 @@
+<html>	
+	<body>
+			<script src="https://apis.google.com/js/platform.js" async defer></script>
+			<meta name="google-signin-client_id" content="714176500534-jatt83dslkt3b331qqpm5nd2givjo5ep.apps.googleusercontent.com">			
+			<div class="g-signin2" data-onsuccess="onSignIn"></div>
+			<div id="fb-root"></div>
+			<script async defer crossorigin="anonymous" src="https://connect.facebook.net/id_ID/sdk.js#xfbml=1&version=v12.0" nonce="vqAb6KxX"></script>
+
+			<div class="fb-login-button" data-width="100" data-size="large" data-button-type="login_with" data-layout="default" data-auto-logout-link="true" data-use-continue-as="false"></div>
+
+		<form id="my-form">
+			Email: <input type="text" id="email" name="email" value=""/><br>
+			Password: <input type="password" id="password" name="password" value=""/><br>
+			<input type="submit" id="login" name="login" value="Login"/>
+		</form>
+			<script src="//ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
+			<script>
+				(function($){
+					function onSignIn(googleUser) {
+					  var profile = googleUser.getBasicProfile();
+					  console.log('ID: ' + profile.getId()); // Do not send to your backend! Use an ID token instead.
+					  console.log('Name: ' + profile.getName());
+					  console.log('Image URL: ' + profile.getImageUrl());
+					  console.log('Email: ' + profile.getEmail()); // This is null if the 'email' scope is not present.
+					}				
+				
+					function processForm(e){
+						$.ajax({
+							url: '/users/checkEmailAndPassword',
+							dataType: 'text',
+							type: 'post',
+							contentType: 'application/x-www-form-urlencoded',
+							data: $(this).serialize(),
+							dataType: "json",
+							success: function( data, textStatus, jQxhr ){
+								if(!jQuery.isEmptyObject(data.results)){
+									$.ajax({
+										url: '/users/updateSignUp/'+$('#email').val(),
+										dataType: 'text',
+										type: 'get',
+										contentType: 'application/x-www-form-urlencoded',
+										dataType: "json",
+										success: function( data, textStatus, jQxhr ){
+											if(!jQuery.isEmptyObject(data.results)){
+												alert('Login Success!');											
+												document.location.href='../set_cookie/'+$("#email").val();
+											}
+										},
+										error: function( jqXhr, textStatus, errorThrown ){
+											console.log( errorThrown );
+										}
+									});
+								}else{
+									alert('Login Failed!');								
+								}
+							},
+							error: function( jqXhr, textStatus, errorThrown ){
+								console.log( errorThrown );
+							}
+						});
+
+						e.preventDefault();
+					}
+					$('#my-form').submit( processForm );
+				})(jQuery);		
+		function disconnect() {
+		  $.ajax({
+			type: 'GET',
+			url: 'https://accounts.google.com/o/oauth2/revoke?token=' +
+				gapi.auth.getToken().access_token,
+			async: false,
+			contentType: 'application/json',
+			dataType: 'jsonp',
+			success: function(result) {
+			  console.log('revoke response: ' + result);
+			  $('#gConnect').show();
+			  $('#disconnect').hide();
+			  $("#result div").empty();
+			},
+			error: function(e) {
+			  console.log(e);
+
+			}
+		  });
+		}
+
+		function _onSignInCallback(authResult){
+		  gapi.client.load('plus','v1')
+					  .then(function() {
+						console.log('authResult', JSON.stringify(authResult));
+						if (authResult['access_token']) {
+						  $('#gConnect').hide();
+						  $('#disconnect').show();
+						  loadSelf();
+						  loadPlusFriends();
+						  loadContacts();
+						} else if (authResult['error']) {
+						  console.error("failed to authentication")
+						}
+					  });
+		}
+
+		function loadSelf(){
+		  gapi.client.plus.people.get({
+			'userId': 'me'
+		  }).then(function(res) {
+			var me = res.result;
+			$('#me_from_plus').empty()
+			.append(JSON.stringify(me))
+			.append($('<p><img src=\"' + me.image.url + '\"></p>'))
+		  },function(e){
+			console.error("failed to load self",e);
+		  });
+
+		}
+
+		function loadPlusFriends(){
+		  gapi.client.plus.people.list({
+			'userId': 'me',
+			'collection': 'visible'
+		  }).then(function(res) {
+			var people = res.result;
+			$('#people_from_plus_api').empty().append(JSON.stringify(people));
+
+			for (var personIndex in people.items) {
+			  person = people.items[personIndex];
+			  $('#people_from_plus_api').append('<img src="' + person.image.url + '">');
+			}
+
+		  },function(err){
+			console.error("failed to load people",e);
+		  });
+		}
+
+		function loadContacts(){
+		  var urls =[];
+
+		  $.ajax({
+			url: 'https://www.google.com/m8/feeds/contacts/default/full?alt=json',
+			dataType: 'jsonp',
+			data: gapi.auth.getToken()
+		  }).done(function(data) {
+			$('#contacts_from_contact_api')
+			  .empty()
+			  .append(JSON.stringify(data.feed));
+			data.feed.entry.forEach(function(e){
+			  var pushed = false;
+			  e.link.forEach(function(l){
+				if (l.type === "image/*" && !pushed){
+				  urls.push(l.href + "?"+ $.param({"access_token":gapi.auth.getToken().access_token, "token_type":gapi.auth.getToken().token_type}));
+				  pushed = true;
+				}
+			  });
+			});
+
+		  function staggerImages(index) {
+			if (index == urls.length) return;
+
+			var img = new Image();
+			var notFound = false;
+			img.onload = function() {
+			  staggerImages(index + 1);
+			};
+			img.onerror = function() {
+			  img.src = "404.png"
+			};
+			img.src = urls[index];
+			$('#contacts_from_contact_api').append(img);
+		  }
+		  staggerImages(0);
+		  });
+
+		}
+
+		$(function(){
+		  $('#disconnect').on("click", disconnect);
+		});				
+		</script>		
+	</body>
+</html>

@@ -1,0 +1,46 @@
+<html>	
+	<body>
+		<script src="//ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>	
+		<script src="/common"></script>		
+		<script>						
+			if(getCookie("loginEmailApp") === null){
+				document.location.href = "/";				
+			}else{
+				$.ajax({
+					url: '/users/checkEmail',
+					dataType: 'text',
+					type: 'post',
+					contentType: 'application/x-www-form-urlencoded',
+					data: {email : getCookie("loginEmailApp")},
+					dataType: "json",
+					success: function( data, textStatus, jQxhr ){
+						if(data.results.length === 0){
+							document.location.href = "/active_email";
+						}
+					},
+					error: function( jqXhr, textStatus, errorThrown ){
+						console.log( errorThrown );
+					}
+				});				
+			}			
+		</script>
+		<a href="/users/reset_password">Reset Password</a><br>
+		<a href="/users/profile">User Profile</a><br>
+		<a href="#" onClick="
+				$.ajax({
+					url: '/users/updateLogout/' + getCookie('loginEmailApp'),
+					dataType: 'text',
+					type: 'get',
+					contentType: 'application/x-www-form-urlencoded',
+					dataType: 'json',
+					success: function( data, textStatus, jQxhr ){
+						eraseCookie('loginEmailApp');
+						document.location.href='../';
+					},
+					error: function( jqXhr, textStatus, errorThrown ){
+						console.log( errorThrown );
+					}
+				});			
+			">Logout</a>
+	</body>
+</html>

@@ -1,0 +1,75 @@
+<html>
+	<script src="//ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>	
+	<script>
+		$.ajax({
+			url: '/users/getActiveUserToday',
+			dataType: 'text',
+			type: 'get',
+			contentType: 'application/x-www-form-urlencoded',
+			data: {},
+			dataType: "json",
+			success: function( data, textStatus, jQxhr ){
+				$('#TotalNumberofUsersTodayTotal').html(data.results[0].count_user);
+			},
+			error: function( jqXhr, textStatus, errorThrown ){
+				console.log( errorThrown );
+			}
+		});		
+		
+		$.ajax({
+			url: '/users/getActiveUserTodayLast7Days',
+			dataType: 'text',
+			type: 'get',
+			contentType: 'application/x-www-form-urlencoded',
+			data: {},
+			dataType: "json",
+			success: function( data, textStatus, jQxhr ){
+				$('#TotalNumberofUsersTodayTotalLastSevenDays').html(data.results[0].count_user);
+			},
+			error: function( jqXhr, textStatus, errorThrown ){
+				console.log( errorThrown );
+			}
+		});	
+		$.ajax({
+			url: '/users/getUserDatabaseDashboard',
+			dataType: 'text',
+			type: 'get',
+			contentType: 'application/x-www-form-urlencoded',
+			data: {},
+			dataType: "json",
+			success: function( data, textStatus, jQxhr ){
+				let content = '';
+				for(let a=0;a<data.results.length;a++){
+					content = content + '<tr><td>' + data.results[a]['user_name'] + '</td><td>' + data.results[a]['signup_time'] + '</td><td>' + data.results[a]['number_of_login'] + '</td><td>' + data.results[a]['logout_time'] + '</td></tr>';
+				}
+				$('#userDatabaseDashboard tbody').append(content);
+				$('#SignUpUsersTotal').html(data.results.length);
+			},
+			error: function( jqXhr, textStatus, errorThrown ){
+				console.log( errorThrown );
+			}
+		});		
+	</script>
+	<body>
+		User Statistic: <br>
+		Total number of users who have signed up: <br>
+		<div id="SignUpUsersTotal"></div>
+		Total number of users with active sessions today: <br>
+		<div id="TotalNumberofUsersTodayTotal"></div>
+		Average number of active session users in the last 7 days rolling: <br>
+		<div id="TotalNumberofUsersTodayTotalLastSevenDays"></div>		
+		<table id="userDatabaseDashboard" border=1>
+			<thead>
+				<tr>
+					<td>User Name</td>
+					<td>Sign Up Time</td>
+					<td>Number of times logged in</td>
+					<td>Last user session.</td>
+				</tr>
+			</thead>
+			<tbody>
+			
+			</tbody>
+		</table>
+	</body>
+</html>

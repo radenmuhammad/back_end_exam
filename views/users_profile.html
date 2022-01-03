@@ -1,0 +1,57 @@
+<html>
+<script src="//ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>	
+<script src="/common"></script>
+<script>
+	if(getCookie("loginEmailApp") === null){
+		document.location.href = "/";				
+	}else{
+		$.ajax({
+			url: '/users/checkEmail',
+			dataType: 'text',
+			type: 'post',
+			contentType: 'application/x-www-form-urlencoded',
+			data: {email : getCookie("loginEmailApp")},
+			dataType: "json",
+			success: function( data, textStatus, jQxhr ){
+				if(data.results.length === 0){
+					document.location.href = "/active_email";
+				}else{
+					$("#user_name").val(data.results[0].user_name);
+					$("#user_email").val(data.results[0].email);				
+				}
+			},
+			error: function( jqXhr, textStatus, errorThrown ){
+				console.log( errorThrown );
+			}
+		});				
+	}			
+</script>
+	<body>
+		User's Name:<br>
+		<input id="user_name" name="user_name" type="text" value=""/><br>
+		Email:<br>
+		<input id="user_email" name="user_email" type="text" value="" readonly/><br>
+		<input id="change_button" name="change_button" type="button" value="Change" 
+		onClick = "
+			$.ajax({
+				url: '/users/updateUsers',
+				dataType: 'text',
+				type: 'post',
+				contentType: 'application/x-www-form-urlencoded',
+				data: {user_name : $('#user_name').val(),
+				       email : $('#user_email').val()},
+				dataType: 'json',
+				success: function( data, textStatus, jQxhr ){
+					if(data.success){
+						alert(data.message);
+						document.location.href='/home';	
+					}
+				},
+				error: function( jqXhr, textStatus, errorThrown ){
+					console.log( errorThrown );
+				}
+			});		
+		"/>
+	</body>
+</html>
+
