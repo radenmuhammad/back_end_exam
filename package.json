@@ -1,0 +1,22 @@
+{
+  "name": "back_end_exam",
+  "version": "1.0.0",
+  "description": "back end exam",
+  "main": "app.js",
+  "scripts": {
+    "test": "back_end_exam"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/radenmuhammad/back_end_exam.git"
+  },
+  "keywords": [
+    "back_end_exam"
+  ],
+  "author": "Raden",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/radenmuhammad/back_end_exam/issues"
+  },
+  "homepage": "https://github.com/radenmuhammad/back_end_exam#readme"
+}
